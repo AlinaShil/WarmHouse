@@ -1,0 +1,42 @@
+@startuml
+!include https://raw.githubusercontent.com/plantuml-stdlib/C4-PlantUML/master/C4_Container.puml
+
+Person(user, "Конечный пользователь", "Управляет устройствами и сценариями")
+Person(support, "Инженер поддержки", "Администрирует систему")
+
+System_Boundary(saas, "Тёплый дом SaaS") {
+  Container(api_gateway, "API Gateway", "Горячая точка входа для всех запросов", "NGINX/Kong/AWS API Gateway")
+  Container(auth_service, "Auth & User Service", "Управление пользователями и аутентификацией", "Go/Node.js")
+  Container(device_registry, "Device Registry", "Регистрация и статус устройств", "Go/Node.js")
+  Container(command_dispatcher, "Command Dispatcher", "Отправка команд на устройства", "Go/Node.js")
+  Container(telemetry_ingest, "Telemetry Ingest Service", "Приём и агрегация телеметрии", "Go/Node.js")
+  Container(rule_engine, "Rule Engine", "Обработка сценариев и расписаний", "Go/Node.js")
+  ContainerDb(relational_db, "PostgreSQL", "Хранение метаданных и конфигураций", "PostgreSQL")
+  ContainerDb(timeseries_db, "Timeseries DB", "Хранение телеметрии", "InfluxDB/TimescaleDB")
+  Container(mqtt_broker, "MQTT Broker", "Обмен сообщениями с устройствами", "EMQX/Mosquitto")
+  Container(kafka, "Event Broker", "Внутренняя шина событий", "Kafka/RabbitMQ")
+}
+
+System_Ext(partner_devices, "Устройства партнёров", "Датчики и реле")
+System_Ext(payment_gateway, "Платёжный провайдер", "Обработка платежей")
+System_Ext(analytics, "Аналитическая система", "BI и отчёты")
+
+Rel(user, api_gateway, "HTTP/HTTPS")
+Rel(api_gateway, auth_service, "REST/gRPC")
+Rel(api_gateway, device_registry, "REST/gRPC")
+Rel(api_gateway, command_dispatcher, "REST/gRPC")
+Rel(api_gateway, telemetry_ingest, "REST/gRPC")
+Rel(api_gateway, rule_engine, "REST/gRPC")
+Rel(auth_service, relational_db, "JDBC/SQL")
+Rel(device_registry, relational_db, "JDBC/SQL")
+Rel(telemetry_ingest, timeseries_db, "Ingest API")
+Rel(rule_engine, kafka, "Публикация событий")
+Rel(device_registry, kafka, "Публикация/подписка")
+Rel(command_dispatcher, mqtt_broker, "Публикация/подписка")
+Rel(kafka, command_dispatcher, "События команд")
+Rel(telemetry_ingest, kafka, "Публикация телеметрии")
+Rel(partner_devices, mqtt_broker, "MQTT")
+Rel(auth_service, payment_gateway, "REST API")
+Rel(telemetry_ingest, analytics, "Отправка телеметрии")
+Rel(support, api_gateway, "HTTP Admin Interface")
+@enduml

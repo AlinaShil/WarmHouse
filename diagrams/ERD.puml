@@ -1,0 +1,101 @@
+@startuml
+' Entity Relationship Diagram for the entire system
+
+hide circle
+
+entity "Tenant" as Tenant {
+  * id : UUID <<PK>>
+  * name : String
+  * plan_id : UUID <<FK>>
+}
+
+entity "SubscriptionPlan" as SubscriptionPlan {
+  * id : UUID <<PK>>
+  * name : String
+  * device_limit : Int
+  * telemetry_limit : Int
+}
+
+entity "User" as User {
+  * id : UUID <<PK>>
+  * username : String
+  * email : String
+  * password_hash : String
+  * tenant_id : UUID <<FK>>
+}
+
+entity "Role" as Role {
+  * id : UUID <<PK>>
+  * name : String
+}
+
+entity "UserRole" as UserRole {
+  * user_id : UUID <<FK>>
+  * role_id : UUID <<FK>>
+}
+
+entity "Device" as Device {
+  * id : UUID <<PK>>
+  * tenant_id : UUID <<FK>>
+  * name : String
+  * type : String
+  * model : String
+  * status : String
+}
+
+entity "TelemetryRecord" as TelemetryRecord {
+  * id : UUID <<PK>>
+  * device_id : UUID <<FK>>
+  * timestamp : DateTime
+  * metric_type : String
+  * value : Float
+}
+
+entity "Rule" as Rule {
+  * id : UUID <<PK>>
+  * tenant_id : UUID <<FK>>
+  * name : String
+  * condition : Text
+  * action : Text
+  * schedule : String
+}
+
+entity "Command" as Command {
+  * id : UUID <<PK>>
+  * device_id : UUID <<FK>>
+  * rule_id : UUID <<FK>>
+  * command_type : String
+  * timestamp : DateTime
+  * status : String
+}
+
+entity "Invoice" as Invoice {
+  * id : UUID <<PK>>
+  * tenant_id : UUID <<FK>>
+  * amount : Decimal
+  * due_date : Date
+  * status : String
+}
+
+entity "SupportTicket" as SupportTicket {
+  * id : UUID <<PK>>
+  * user_id : UUID <<FK>>
+  * created_date : DateTime
+  * status : String
+  * description : Text
+}
+
+' Relationships
+Tenant ||--o{ User : "has"
+Tenant ||--o{ Device : "owns"
+Tenant ||--o{ Rule : "defines"
+Tenant ||--o{ Invoice : "billed"
+SubscriptionPlan ||--o{ Tenant : "subscribes"
+User ||--o{ UserRole : "assigns"
+Role ||--o{ UserRole : "to users"
+Device ||--o{ TelemetryRecord : "records"
+Device ||--o{ Command : "executes"
+Rule ||--o{ Command : "triggers"
+User ||--o{ SupportTicket : "creates"
+
+@enduml

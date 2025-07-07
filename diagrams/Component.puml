@@ -1,0 +1,77 @@
+@startuml
+!include https://raw.githubusercontent.com/plantuml-stdlib/C4-PlantUML/master/C4_Component.puml
+
+'====================================
+' Компоненты Auth & User Service
+'====================================
+Container_Boundary(auth_service, "Auth & User Service") {
+  Component(auth_api, "Auth API", "REST API для логина, логаута и управления пользователями")
+  Component(user_repo, "User Repository", "CRUD для хранения профилей и ролей в PostgreSQL")
+  Component(token_manager, "JWT Manager", "Генерация и валидация JWT-токенов")
+  Component(email_notifier, "Email Service", "Отправка писем для восстановления пароля и уведомлений")
+}
+Rel(auth_api, user_repo, "JDBC/SQL")
+Rel(auth_api, token_manager, "Генерирует/проверяет JWT")
+Rel(auth_api, email_notifier, "Вызывает для отправки писем")
+
+newpage
+
+'====================================
+' Компоненты Device Registry Service
+'====================================
+Container_Boundary(device_registry, "Device Registry Service") {
+  Component(device_api, "Device API", "REST API для регистрации и управления метаданными устройств")
+  Component(device_repo, "Device Repository", "Хранение данных устройств (UUID, модель, статус)")
+  Component(validation_service, "Validation Service", "Проверка корректности схемы и серийного номера")
+}
+Rel(device_api, device_repo, "JDBC/SQL")
+Rel(device_api, validation_service, "Валидация при регистрации")
+
+newpage
+
+'====================================
+' Компоненты Command Dispatcher Service
+'====================================
+Container_Boundary(command_dispatcher, "Command Dispatcher Service") {
+  Component(command_api, "Command API", "REST API для отправки команд к устройствам")
+  Component(command_queue, "Command Queue", "Очередь команд в Kafka/RabbitMQ")
+  Component(mqtt_publisher, "MQTT Publisher", "Публикует команды в MQTT топики устройств")
+}
+Rel(command_api, command_queue, "Публикует события команд")
+Rel(command_queue, mqtt_publisher, "Читает и отправляет MQTT")
+
+newpage
+
+'====================================
+' Компоненты Telemetry Ingest Service
+'====================================
+Container_Boundary(telemetry_ingest, "Telemetry Ingest Service") {
+  Component(mqtt_listener, "MQTT Listener", "Подписка на топики устройств для сбора телеметрии")
+  Component(telemetry_processor, "Processor", "Обработка и нормализация входящих данных")
+  Component(tsdb_writer, "Timeseries Writer", "Запись нормализованных данных в Timeseries DB")
+  Component(telemetry_api, "Telemetry API", "REST API для выборки исторических данных")
+}
+Rel(mqtt_listener, telemetry_processor, "Передаёт сырые сообщения")
+Rel(telemetry_processor, tsdb_writer, "Записывает в Timeseries DB")
+Rel(telemetry_api, tsdb_writer, "Читает исторические данные")
+
+newpage
+
+'====================================
+' Компоненты Rule Engine Service
+'====================================
+Container_Boundary(rule_engine, "Rule Engine Service") {
+  Component(rule_api, "Rule API", "REST API для создания и управления сценариями")
+  Component(rule_repo, "Rule Repository", "Хранение правил и сценариев")
+  Component(scheduler, "Scheduler", "Планировщик триггеров по времени")
+  Component(event_consumer, "Event Consumer", "Подписка на события телеметрии из Kafka")
+  Component(action_executor, "Action Executor", "Генерация команд по срабатыванию правил")
+}
+Rel(rule_api, rule_repo, "JDBC/SQL")
+Rel(scheduler, rule_repo, "Выбирает активные правила")
+Rel(event_consumer, rule_repo, "Читает правила для событий")
+Rel(action_executor, scheduler, "Получает триггеры")
+Rel(action_executor, event_consumer, "Получает события")
+Rel(action_executor, command_dispatcher, "Отправляет команды")
+
+@enduml

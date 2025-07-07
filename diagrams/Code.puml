@@ -1,0 +1,85 @@
+@startuml
+' Diagram Code Level (C4 Level 4) for Auth & User Service
+
+package "Auth & User Service" {
+
+  ' Entities
+  class User {
+    +UUID id
+    +String username
+    +String email
+    +String passwordHash
+    +List<Role> roles
+    +validatePassword(password:String):Boolean
+  }
+  class Role {
+    +String name
+  }
+  class Tenant {
+    +UUID id
+    +String name
+    +SubscriptionPlan plan
+    +checkSubscription():Boolean
+  }
+
+  ' Controllers
+  class AuthController {
+    +login(request: LoginRequest): AuthResponse
+    +logout(request: LogoutRequest)
+    +register(request: RegisterRequest): User
+  }
+  class UserController {
+    +getUser(id:UUID): User
+    +updateUser(id:UUID, request: UpdateUserRequest): User
+    +assignRole(userId:UUID, role:String)
+  }
+
+  ' Services
+  class AuthService {
+    +authenticate(username:String, password:String): AuthResponse
+    +invalidateToken(token:String)
+  }
+  class UserService {
+    +createUser(request:RegisterRequest): User
+    +updateUser(id:UUID, request:UpdateUserRequest): User
+    +findById(id:UUID): User
+    +assignRole(user:User, role:String)
+  }
+  class TokenManager {
+    +generateToken(user:User): String
+    +verifyToken(token:String): UserDetails
+  }
+  class EmailService {
+    +sendEmail(to:String, subject:String, body:String)
+  }
+
+  ' Repositories
+  class UserRepository {
+    +save(user:User): User
+    +findByUsername(username:String): Optional<User>
+    +findById(id:UUID): Optional<User>
+  }
+
+  ' DTOs
+  class LoginRequest
+  class AuthResponse
+  class RegisterRequest
+  class UpdateUserRequest
+  class UserDetails
+  class LogoutRequest
+
+}
+
+' Dependencies and relations
+AuthController --> AuthService : uses
+AuthController --> UserService : uses
+UserController --> UserService : uses
+AuthService --> UserRepository : uses
+AuthService --> TokenManager : uses
+UserService --> UserRepository : uses
+UserService --> EmailService : uses
+TokenManager --> UserDetails : returns
+User --> Role : has
+Tenant --> SubscriptionPlan : uses
+
+@enduml
