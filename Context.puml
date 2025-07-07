@@ -1,0 +1,21 @@
+@startuml
+!include https://raw.githubusercontent.com/plantuml-stdlib/C4-PlantUML/master/C4_Context.puml
+
+Person(user, "Конечный пользователь", "Владелец дома, управляет устройствами и сценарием")
+Person(support, "Инженер поддержки", "Обеспечивает администрирование и поддержку системы")
+
+System_Boundary(saas, "Тёплый дом SaaS") {
+  System(saas_app, "Система «Тёплый дом»", "Платформа для управления умным домом и телеметрией")
+}
+
+System_Ext(partner_devices, "Устройства партнёров", "Датчики и реле, поставляемые сторонними производителями")
+System_Ext(payment_gateway, "Платёжный провайдер", "Обработка платежей и выставление счётов")
+System_Ext(analytics, "Система аналитики", "BI-платформа для отчётов и анализа телеметрии")
+
+Rel(user, saas_app, "Использует для управления устройствами и просмотра телеметрии")
+Rel(saas_app, partner_devices, "Отправляет команды и получает данные по MQTT/REST")
+Rel(saas_app, payment_gateway, "Интегрируется через API для биллинга и подписок")
+Rel(saas_app, analytics, "Отправляет исторические данные телеметрии")
+Rel(support, saas_app, "Администрирует и поддерживает через административный интерфейс")
+
+@enduml
