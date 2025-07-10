@@ -1,0 +1,62 @@
+openapi: 3.0.1
+info:
+  title: Telemetry Ingest Service API
+  version: 1.0.0
+servers:
+  - url: https://api.example.com/telemetry
+paths:
+  /:
+    post:
+      summary: Отправить телеметрические данные
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/TelemetryRecord'
+      responses:
+        '202':
+          description: Принято
+  /device/{deviceId}:
+    get:
+      summary: Получить историю телеметрии устройства
+      parameters:
+        - name: deviceId
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: from
+          in: query
+          schema:
+            type: string
+            format: date-time
+        - name: to
+          in: query
+          schema:
+            type: string
+            format: date-time
+        responses:
+          '200':
+            description: Список записей
+            content:
+              application/json:
+                schema:
+                  type: array
+                  items:
+                    $ref: '#/components/schemas/TelemetryRecord'
+      components:
+        schemas:
+          TelemetryRecord:
+            type: object
+            required: [ deviceId, timestamp, metricType, value ]
+            properties:
+              deviceId:
+                type: string
+              timestamp:
+                type: string
+                format: date-time
+              metricType:
+                type: string
+              value:
+                type: number

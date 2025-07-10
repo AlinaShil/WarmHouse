@@ -1,0 +1,162 @@
+openapi: 3.0.1
+info:
+  title: Auth & User Service API
+  version: 1.0.0
+servers:
+  - url: https://api.example.com/auth
+paths:
+  /login:
+    post:
+      summary: Пользователь логинится
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/LoginRequest'
+      responses:
+        '200':
+          description: Успешная аутентификация
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AuthResponse'
+  /logout:
+    post:
+      summary: Пользователь логаутится
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/LogoutRequest'
+      responses:
+        '204':
+          description: Успешный выход
+  /users:
+    post:
+      summary: Регистрация нового пользователя
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/RegisterRequest'
+      responses:
+        '201':
+          description: Пользователь создан
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/User'
+  /users/{userId}:
+    get:
+      summary: Получить информацию о пользователе
+      parameters:
+        - name: userId
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Пользователь найден
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/User'
+    put:
+      summary: Обновить данные пользователя
+      parameters:
+        - name: userId
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdateUserRequest'
+      responses:
+        '200':
+          description: Обновлено
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/User'
+  /users/{userId}/roles:
+    post:
+      summary: Назначить роль пользователю
+      parameters:
+        - name: userId
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                role:
+                  type: string
+      responses:
+        '204':
+          description: Роль назначена
+components:
+  schemas:
+    LoginRequest:
+      type: object
+      required: [username, password]
+      properties:
+        username:
+          type: string
+        password:
+          type: string
+    LogoutRequest:
+      type: object
+      required: [token]
+      properties:
+        token:
+          type: string
+    AuthResponse:
+      type: object
+      properties:
+        token:
+          type: string
+        expiresIn:
+          type: integer
+    RegisterRequest:
+      type: object
+      required: [username, email, password]
+      properties:
+        username:
+          type: string
+        email:
+          type: string
+        password:
+          type: string
+    UpdateUserRequest:
+      type: object
+      properties:
+        email:
+          type: string
+        password:
+          type: string
+    User:
+      type: object
+      properties:
+        id:
+          type: string
+        username:
+          type: string
+        email:
+          type: string
+        roles:
+          type: array
+          items:
+            type: string

@@ -1,0 +1,90 @@
+openapi: 3.0.1
+info:
+  title: Device Registry Service API
+  version: 1.0.0
+servers:
+  - url: https://api.example.com/devices
+paths:
+  /:
+    post:
+      summary: Зарегистрировать устройство
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/DeviceCreateRequest'
+      responses:
+        '201':
+          description: Устройство создано
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Device'
+  /{deviceId}:
+    get:
+      summary: Получить данные устройства
+      parameters:
+        - name: deviceId
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Устройство найдено
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Device'
+    put:
+      summary: Обновить устройство
+      parameters:
+        - name: deviceId
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/DeviceUpdateRequest'
+      responses:
+        '200':
+          description: Обновлено
+components:
+  schemas:
+    DeviceCreateRequest:
+      type: object
+      required: [name, type, model]
+      properties:
+        name:
+          type: string
+        type:
+          type: string
+        model:
+          type: string
+    DeviceUpdateRequest:
+      type: object
+      properties:
+        name:
+          type: string
+        status:
+          type: string
+    Device:
+      type: object
+      properties:
+        id:
+          type: string
+        tenantId:
+          type: string
+        name:
+          type: string
+        type:
+          type: string
+        model:
+          type: string
+        status:
+          type: string

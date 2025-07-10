@@ -1,0 +1,120 @@
+openapi: 3.0.1
+info:
+  title: Rule Engine Service API
+  version: 1.0.0
+servers:
+  - url: https://api.example.com/rules
+paths:
+  /:
+    post:
+      summary: Создать правило
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/RuleCreateRequest'
+      responses:
+        '201':
+          description: Правило создано
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Rule'
+    get:
+      summary: Список правил
+      responses:
+        '200':
+          description: Массив правил
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Rule'
+  /{ruleId}:
+    get:
+      summary: Получить правило
+      parameters:
+        - name: ruleId
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Правило найдено
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Rule'
+    put:
+      summary: Обновить правило
+      parameters:
+        - name: ruleId
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/RuleUpdateRequest'
+      responses:
+        '200':
+          description: Обновлено
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Rule'
+    delete:
+      summary: Удалить правило
+      parameters:
+        - name: ruleId
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '204':
+          description: Удалено
+components:
+  schemas:
+    RuleCreateRequest:
+      type: object
+      required: [name, condition, action]
+      properties:
+        name:
+          type: string
+        condition:
+          type: string
+        action:
+          type: string
+        schedule:
+          type: string
+    RuleUpdateRequest:
+      type: object
+      properties:
+        name:
+          type: string
+        condition:
+          type: string
+        action:
+          type: string
+        schedule:
+          type: string
+    Rule:
+      type: object
+      properties:
+        id:
+          type: string
+        name:
+          type: string
+        condition:
+          type: string
+        action:
+          type: string
+        schedule:
+          type: string

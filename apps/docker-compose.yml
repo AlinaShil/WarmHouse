@@ -7,7 +7,17 @@ services:
   ## тут нужно добавить настройки
 
   temperature-api:
-  ## тут нужно добавить приложение
+    build:
+      context: .
+      dockerfile: Dockerfile
+      image: temperature-api:latest
+      environment:
+        # Настраиваем порт Spring Boot-приложения
+        - SERVER_PORT=8081
+      ports:
+        # Проброс внешнего 8081 на внутренний 8081
+        - "8081:8081"
+      restart: unless-stopped
 
   app:
     build:

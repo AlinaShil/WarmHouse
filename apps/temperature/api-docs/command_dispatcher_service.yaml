@@ -1,0 +1,54 @@
+openapi: 3.0.1
+info:
+  title: Command Dispatcher Service API
+  version: 1.0.0
+servers:
+  - url: https://api.example.com/commands
+paths:
+  /:
+    post:
+      summary: Создать команду для устройства
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CommandCreateRequest'
+      responses:
+        '202':
+          description: Команда принята в обработку
+  /{commandId}:
+    get:
+      summary: Получить статус команды
+      parameters:
+        - name: commandId
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Статус команды
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CommandStatusResponse'
+components:
+  schemas:
+    CommandCreateRequest:
+      type: object
+      required: [deviceId, type]
+      properties:
+        deviceId:
+          type: string
+        type:
+          type: string
+        parameters:
+          type: object
+    CommandStatusResponse:
+      type: object
+      properties:
+        status:
+          type: string
+        timestamp:
+          type: string
