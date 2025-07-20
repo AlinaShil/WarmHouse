@@ -4,20 +4,36 @@ services:
   postgres:
     image: postgres:16-alpine
     container_name: smarthome-postgres
-  ## тут нужно добавить настройки
+    environment:
+      # создаём суперпользователя и базу
+      POSTGRES_USER: smarthome_user
+      POSTGRES_PASSWORD: supersecretpassword
+      POSTGRES_DB: smarthome_db
+      volumes:
+        - pgdata:/var/lib/postgresql/data
+      ports:
+        - "5432:5432"
+      restart: unless-stopped
 
   temperature-api:
     build:
-      context: .
+      context: ./apps/temperature-api
       dockerfile: Dockerfile
       image: temperature-api:latest
       environment:
-        # Настраиваем порт Spring Boot-приложения
-        - SERVER_PORT=8081
+        SERVER_PORT: 8081
+        # параметры подключения к БД
+        SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/smarthome_db
+        SPRING_DATASOURCE_USERNAME: smarthome_user
+        SPRING_DATASOURCE_PASSWORD: supersecretpassword
+      depends_on:
+        - postgres
       ports:
-        # Проброс внешнего 8081 на внутренний 8081
         - "8081:8081"
       restart: unless-stopped
+
+    volumes:
+      pgdata:
 
   app:
     build:
